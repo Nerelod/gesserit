@@ -54,7 +54,6 @@ func listen(l net.Listener, sessions *[]session){
 		}
 		s := session{conn, i}
 		*sessions = append(*sessions, s)
-		fmt.Println(*sessions)
 		fmt.Println("New Session from " + conn.RemoteAddr().String())
 		i++
 		go handleConnection(s)
@@ -93,7 +92,7 @@ func main() {
 					fmt.Println(sessions[i].sid, ": " + sessions[i].connection.RemoteAddr().String())
 				}
 			}
-		}  else {
+		} else {
 			sendData(sessions[currentSession].connection, cmd)
 		}
 	}
