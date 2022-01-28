@@ -11,11 +11,11 @@ upgrade the shell using a python one liner
 
 Once in a session, gesserit commands can be run by prepending 'gesserit' 
 Here are the commands
-'''
+```
 gesserit switch
 gesserit list
 gesserit quit
-'''
+```
 That should be self explanatory. 
 Switch switches the current session
 List lists the sessions
