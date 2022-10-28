@@ -14,10 +14,58 @@ Here are the commands
 ```
 gesserit switch
 gesserit list
+gesserit grouplist
+gesserit add
+gesserit remove
+gesserit groupsend
+gesserit hush
+gesserit yell
 gesserit quit
 ```
-That should be self explanatory. 
-Switch switches the current session
-List lists the sessions
-Quit will quit the tool from running.
+
+### Switch
+Switch to another session shell
+```
+gesserit switch <session id to switch to>
+```
+### List
+List all sessions
+```
+gesserit list
+```
+### Group list
+list sessions added to the group
+```
+gesserit grouplist
+```
+### Add
+Add session to the group
+```
+gesserit add <session id to add>
+```
+### Remove
+Remove session from group
+```
+gesserit remove <session id to remove>
+```
+### Group Send
+Send a command to all sessions in the group
+```
+gesserit groupsend <command(s) to send>
+```
+### Hush
+tell gesserit not to announce new shells
+```
+gesserit hush
+```
+### Yell
+tell gesserit to announce new shells
+```
+gesserit yell
+```
+### Quit
+quit the tool
+````
+gesserit quit
+```
 
