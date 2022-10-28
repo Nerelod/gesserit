@@ -27,6 +27,7 @@ func receiveData(conn net.Conn) string {
 	_, err := conn.Read(msg[0:])
 	if err != nil {
 		fmt.Println("Error receiving data", err.Error())
+		return "THISCONNECTIONISDEAD"
 	}
 	return string(msg)
 }
@@ -52,7 +53,11 @@ func handleConnection(s session) {
 		fmt.Println("------------------------------------------")
 	}
 	for {
-		_, err := fmt.Print(receiveData(s.connection))
+		dat := receiveData(s.connection)
+		if dat == "THISCONNECTIONISDEAD" {
+			return
+		}
+		_, err := fmt.Print(dat)
 		if err != nil {
 			fmt.Println("Connection", s.connection, "closed")
 			return
